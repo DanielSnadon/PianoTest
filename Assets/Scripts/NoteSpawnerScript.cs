@@ -7,15 +7,19 @@ using UnityEngine.UI;
 public class NoteSpawnerScript : MonoBehaviour
 {
     public int currentNoteNumber = 0;
-    public char currentNoteChar;
+    
     public bool isPlaying;
-    public float countdown;
-    public TMP_InputField noteList;
+    public TMP_InputField noteSheetInput;
+    public TMP_InputField tempoInput;
+    public TMP_InputField speedInput;
     public string currentNoteSheet;
     public GameObject notePrefab;
     public List<GameObject> cubePositions;
-    public float tempo = 1;
-    public float currentSpeed;
+
+    private int noteNumberPos;
+    private float currentSpeed = 1;
+    private float tempo = 1;
+    private float countdown;
     private string allNotes = "1!2@34$5%6^78*9(0qQwWeErtTyYuiIoOpPasSdDfgGhHjJklLzZxcCvVbBnm";
     void Start()
     {
@@ -29,51 +33,33 @@ public class NoteSpawnerScript : MonoBehaviour
             noteReader();
         }
     }
-    public void fetchSheetInput()
-    {
-        currentNoteSheet = noteList.text;
-        currentNoteNumber = 0;
-        isPlaying = true;
-    }
+    
+
     public void noteReader()
     {
         countdown += Time.deltaTime;
         if (countdown > tempo && !(currentNoteNumber + 1 > currentNoteSheet.Length))
         {
             countdown = 0;
-            currentNoteChar = currentNoteSheet[currentNoteNumber++];
+            char currentNoteChar = currentNoteSheet[currentNoteNumber++];
+            
             if (currentNoteChar == '[')
             {
                 while (currentNoteSheet[currentNoteNumber] != ']')
                 {
                     currentNoteChar = currentNoteSheet[currentNoteNumber];
-                    Vector3 notePos = cubePositions[allNotes.IndexOf(currentNoteChar) % 12 / 3].transform.position;
+                    noteNumberPos = 3 - allNotes.IndexOf(currentNoteChar) % 12 / 3;
+                    Vector3 notePos = cubePositions[noteNumberPos].transform.position;
                     spawnNote(currentNoteChar, currentSpeed, notePos);
                     currentNoteNumber++;
                 }
             }
             else if (allNotes.Contains(currentNoteChar))
             {
-                Vector3 notePos = cubePositions[3 - allNotes.IndexOf(currentNoteChar) % 12 / 3].transform.position;
+                noteNumberPos = 3 - allNotes.IndexOf(currentNoteChar) % 12 / 3;
+                Vector3 notePos = cubePositions[noteNumberPos].transform.position;
                 spawnNote(currentNoteChar, currentSpeed, notePos);
             }
-            else if (currentNoteChar == '|')
-            {
-                countdown = -tempo;
-            }
-            else if (currentNoteChar == '-')
-            {
-                countdown = tempo / 2;
-            }
-            else if (currentNoteChar == '\n')
-            {
-                countdown = -tempo / 2;
-            }
-            else
-            {
-                countdown = 0;
-            }
-
         }
         else if (currentNoteNumber + 1 > currentNoteSheet.Length)
         {
@@ -81,11 +67,42 @@ public class NoteSpawnerScript : MonoBehaviour
         }
     }
 
-    public void spawnNote(char NoteName, float speed, Vector3 pos)
+    public void spawnNote(char noteName, float speed, Vector3 pos)
     {
         GameObject newNote = Instantiate(notePrefab, pos, notePrefab.transform.rotation);
         NoteScript newNoteScript = newNote.GetComponent<NoteScript>();
+
+        newNoteScript.noteSound = Resources.Load<AudioClip>($"Audio/Notes/{allNotes.IndexOf(noteName)}");
+
+        if (newNoteScript.noteSound == null)
+        {
+            Debug.LogError("Не удалось загрузить звук ноты!");
+            newNoteScript.noteSound = Resources.Load<AudioClip>("Audio/Notes/error");
+        }
+
         newNoteScript.speed = speed;
-        newNoteScript.noteName = NoteName;
+        newNoteScript.noteName = noteName;
+        newNoteScript.noteNumberPos = noteNumberPos;
     }
+
+    public void fetchSheetInput()
+    {
+        currentNoteSheet = noteSheetInput.text;
+    }
+    
+    public void fetchTempo()
+    {
+        tempo = 60 / float.Parse(tempoInput.text);
+    }
+
+    public void fetchSpeed()
+    {
+        currentSpeed = float.Parse(speedInput.text);
+    }
+    public void startGame()
+    {
+        currentNoteNumber = 0;
+        isPlaying = true;
+    }
+
 }

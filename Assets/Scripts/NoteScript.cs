@@ -1,37 +1,64 @@
+using Unity.VisualScripting;
 using UnityEngine;
 public class NoteScript : MonoBehaviour
 {
     private AudioSource cameraAudioSource;
-    public AudioClip NoteSound;
+    public AudioClip noteSound;
     public float speed = 0.1f;
     public char noteName = '0';
-    private string allNotes = "1!2@34$5%6^78*9(0qQwWeErtTyYuiIoOpPasSdDfgGhHjJklLzZxcCvVbBnm";
+    public int noteNumberPos = 0;
+    
+    private float border = -15;
+    private float hitpos = -7;
+
     void Start()
     {
         cameraAudioSource = GameObject.Find("Main Camera").GetComponent<AudioSource>();
-
-        NoteSound = Resources.Load<AudioClip>($"Audio/Notes/{allNotes.IndexOf(noteName)}");
-
-        if (NoteSound == null)
-        {
-            Debug.LogError("Не удалось загрузить звук ноты!");
-            NoteSound = Resources.Load<AudioClip>("Audio/Notes/error");
-        }
 
     }
 
     void Update()
     {
-        if (transform.transform.position.z < -15)
-        {
-            Destroy(gameObject);
-        }
-        transform.Translate(Vector3.forward * Time.deltaTime * speed);
+        checkBorder();
+        Move();
+        checkKeyboard();
     }
 
     void OnMouseDown()
     {
-        cameraAudioSource.PlayOneShot(NoteSound);
+        completeNote();
+    }
+
+    void completeNote()
+    {
+        cameraAudioSource.PlayOneShot(noteSound);
         Destroy(gameObject);
+    }
+
+    void checkKeyboard()
+    {
+        if (Input.anyKeyDown && (transform.position.z - hitpos) < 3)
+        {
+            if ((noteNumberPos == 0 && Input.GetKeyDown(KeyCode.LeftArrow))
+            || (noteNumberPos == 1 && Input.GetKeyDown(KeyCode.DownArrow))
+            || (noteNumberPos == 2 && Input.GetKeyDown(KeyCode.UpArrow))
+            || (noteNumberPos == 3 && Input.GetKeyDown(KeyCode.RightArrow)))
+            {
+                completeNote();
+            }
+        }
+    }
+    
+    void Move()
+    {
+        transform.Translate(Vector3.forward * Time.deltaTime * speed);
+    }
+
+    void checkBorder()
+    {
+        if (transform.transform.position.z < border)
+        {
+            Destroy(gameObject);
+        }
     }
 }
