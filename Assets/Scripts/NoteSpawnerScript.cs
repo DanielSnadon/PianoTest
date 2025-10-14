@@ -6,12 +6,15 @@ using UnityEngine.UI;
 
 public class NoteSpawnerScript : MonoBehaviour
 {
+    private AudioSource cameraAudioSource;
     public int currentNoteNumber = 0;
     
     public bool isPlaying;
     public TMP_InputField noteSheetInput;
     public TMP_InputField tempoInput;
     public TMP_InputField speedInput;
+    public Slider pitchSlider;
+    public Slider volumeSlider;
     public string currentNoteSheet;
     public GameObject notePrefab;
     public List<GameObject> cubePositions;
@@ -23,7 +26,7 @@ public class NoteSpawnerScript : MonoBehaviour
     private string allNotes = "1!2@34$5%6^78*9(0qQwWeErtTyYuiIoOpPasSdDfgGhHjJklLzZxcCvVbBnm";
     void Start()
     {
-
+        cameraAudioSource = GameObject.Find("Main Camera").GetComponent<AudioSource>();
     }
 
     void Update()
@@ -103,6 +106,16 @@ public class NoteSpawnerScript : MonoBehaviour
     {
         currentNoteNumber = 0;
         isPlaying = true;
+    }
+
+    public void changePitch()
+    {
+        cameraAudioSource.pitch = pitchSlider.value;
+    }
+
+    public void changeVolume()
+    {
+        cameraAudioSource.volume = volumeSlider.value;
     }
 
 }
