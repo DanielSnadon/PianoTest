@@ -8,8 +8,8 @@ public class NoteSpawnerScript : MonoBehaviour
 {
     private AudioSource cameraAudioSource;
     public int currentNoteNumber = 0;
-    
-    public bool isPlaying;
+    public bool isPlaying = false;
+    public bool autoPlay = false;
     public TMP_InputField noteSheetInput;
     public TMP_InputField tempoInput;
     public TMP_InputField speedInput;
@@ -18,15 +18,17 @@ public class NoteSpawnerScript : MonoBehaviour
     public string currentNoteSheet;
     public GameObject notePrefab;
     public List<GameObject> cubePositions;
-
     private int noteNumberPos;
     private float currentSpeed = 1;
     private float tempo = 1;
     private float countdown;
     private string allNotes = "1!2@34$5%6^78*9(0qQwWeErtTyYuiIoOpPasSdDfgGhHjJklLzZxcCvVbBnm";
+    public GameObject counterManager;
+    private ResultCounter counterScript;
     void Start()
     {
         cameraAudioSource = GameObject.Find("Main Camera").GetComponent<AudioSource>();
+        counterScript = counterManager.GetComponent<ResultCounter>();
     }
 
     void Update()
@@ -35,8 +37,12 @@ public class NoteSpawnerScript : MonoBehaviour
         {
             noteReader();
         }
+
+        if (Input.GetKeyDown(KeyCode.Tab))
+        {
+            startGame();
+        }
     }
-    
 
     public void noteReader()
     {
@@ -45,7 +51,7 @@ public class NoteSpawnerScript : MonoBehaviour
         {
             countdown = 0;
             char currentNoteChar = currentNoteSheet[currentNoteNumber++];
-            
+
             if (currentNoteChar == '[')
             {
                 while (currentNoteSheet[currentNoteNumber] != ']')
@@ -86,13 +92,16 @@ public class NoteSpawnerScript : MonoBehaviour
         newNoteScript.speed = speed;
         newNoteScript.noteName = noteName;
         newNoteScript.noteNumberPos = noteNumberPos;
+        newNoteScript.autoPlay = autoPlay;
+        counterScript.overall++;
+        counterScript.updateOverallText();
     }
 
     public void fetchSheetInput()
     {
         currentNoteSheet = noteSheetInput.text;
     }
-    
+
     public void fetchTempo()
     {
         tempo = 60 / float.Parse(tempoInput.text);
@@ -104,6 +113,7 @@ public class NoteSpawnerScript : MonoBehaviour
     }
     public void startGame()
     {
+        counterScript.resetAllCounts();
         currentNoteNumber = 0;
         isPlaying = true;
     }
@@ -112,10 +122,13 @@ public class NoteSpawnerScript : MonoBehaviour
     {
         cameraAudioSource.pitch = pitchSlider.value;
     }
-
     public void changeVolume()
     {
         cameraAudioSource.volume = volumeSlider.value;
     }
 
+    public void enableAutoPilot()
+    {
+        autoPlay = !autoPlay;
+    }
 }
