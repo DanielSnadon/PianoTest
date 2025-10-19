@@ -6,6 +6,21 @@ public class UIScript : MonoBehaviour
 
     public GameObject menuUI;
 
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            if (gameUI.activeSelf)
+            {
+                showMenuUI();
+            }
+            else
+            {
+                showGameUI();
+            }
+            
+        }
+    }
     public void showGameUI()
     {
         gameUI.SetActive(true);
